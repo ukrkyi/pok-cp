@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-#define NUM_ROW 5
+#define NUM_ROW 5U
 
 extern uint8_t rows[NUM_ROW];
 
