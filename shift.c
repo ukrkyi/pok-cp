@@ -6,13 +6,14 @@
 #include <avr/io.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 #define SHIFT_SIZE ((uint8_t)(8 * NUM_ROW))
 
 static inline void pl_high();
 static inline void pl_low();
 
-static uint8_t ptr;
+static uint8_t ptr = UINT8_MAX;
 
 void shift_init() {
 	pl_high();
@@ -37,15 +38,15 @@ static inline uint8_t get_data() {
 }
 
 void rising_it() {
-	if (ptr == SHIFT_SIZE) {
+	if (ptr == UINT8_MAX) {
 		if (get_pl()) {
 			pl_low();
 			return;
 		} else {
 			pl_high();
-			ptr = 0;
+			ptr = SHIFT_SIZE - 1;
 		}
 	}
 	display_setpoint(ptr / 8, ptr % 8, get_data());
-	ptr++;
+	ptr--;
 }
