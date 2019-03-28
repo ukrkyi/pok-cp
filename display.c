@@ -15,11 +15,16 @@
 
 #include <avr/io.h>
 
-#define TRANSMIT_SIZE (NUM_ROW*16)
+#define NUM_COLUMN	8U
+
+#define TRANSMIT_SIZE (NUM_COLUMN*16U)
+
+#define FIX_IGNORE_ROWS 1
+#define CONFIG_BIT_NUM (8 + FIX_IGNORE_ROWS)
 
 uint8_t rows[NUM_ROW] = {0};//0x1, 0x2, 0x3, 0x4, 0x5};
 /*				test  on  | brightness   | line number     | shutdown| test off*/
-static const uint8_t config[] = {0xF, 0x01, /*0x0A, 0x0,*/ 0xB, NUM_ROW - 1, 0xc, 0x1, 0xF, 0x00};
+static const uint8_t config[] = {0xF, 0x01, /*0x0A, 0x0,*/ 0xB, NUM_COLUMN - 1, 0xc, 0x1, 0xF, 0x00};
 static const uint8_t conf_len = sizeof(config) * 8;
 
 static uint8_t ptr = 0;
@@ -67,8 +72,10 @@ void falling_it_data() {
 	// Put next bit
 	register uint8_t bit = 0;
 	register uint8_t pos = ptr % 16;
-	if (pos >= 8)
-		bit = rows[ptr / 16]&(1 << (15 - pos));
+	if (pos >= CONFIG_BIT_NUM + NUM_ROW)
+		bit = 0;
+	else if (pos >= CONFIG_BIT_NUM)
+		bit = rows[pos - CONFIG_BIT_NUM] & (1 << (ptr / 16));
 	else if (pos >= 4)
 		bit = ((ptr / 16) + 1) & (1 << (7 - pos));
 	set_data(bit);
